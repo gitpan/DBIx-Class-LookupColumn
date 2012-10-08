@@ -1,0 +1,13 @@
+
+
+This archive contains the distribution DBIx-Class-LookupColumn,
+version 0.01:
+
+  dbic component generating accessors method to lookup table from a client table
+
+This software is copyright (c) 2012 by Karl Forner.
+
+This is free software; you can redistribute it and/or modify it under
+the same terms as the Perl 5 programming language system itself.
+
+
