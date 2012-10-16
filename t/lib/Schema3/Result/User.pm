@@ -5,7 +5,7 @@ use warnings;
 use base qw/DBIx::Class::Core/;
 
 
-__PACKAGE__->load_components( qw/+DBIx::Class::LookupColumn/ );
+__PACKAGE__->load_components( qw/LookupColumn/ );
 
 
 __PACKAGE__->table("user");

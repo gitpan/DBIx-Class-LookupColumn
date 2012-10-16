@@ -51,7 +51,7 @@ ok( $id_faker =~ /1/, "cash test, without an additionnal db query, in the cache 
 
 
 
-# exception is thrown
+# exception is thrown value in Lookup table inexistent
 dies_ok {DBIx::Class::LookupColumn::Manager->FETCH_NAME_BY_ID( $schema, 'PermissionType', 'name', 0 ) }  "FETCH_NAME_BY_ID: should die on bad id";
 dies_ok {DBIx::Class::LookupColumn::Manager->FETCH_NAME_BY_ID( $schema, 'PermissionType', 'Homer', 1) }  "FETCH_NAME_BY_ID: should die on bad field name";
 dies_ok {DBIx::Class::LookupColumn::Manager->FETCH_ID_BY_NAME( $schema, 'PermissionType', 'name', 'Faker' ) }  "FETCH_ID_BY_NAME: should die on bad name";

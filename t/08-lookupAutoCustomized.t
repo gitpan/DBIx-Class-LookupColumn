@@ -35,25 +35,52 @@ $result->load_components( qw/+DBIx::Class::LookupColumn::Auto/ );
 my @tables = $schema->sources;
 
 $result->add_lookups(
-	targets => [ "User" ],
-	lookups => [ "PermissionType", "DepartmentType", "StudyType" ],
-	options =>{
+	targets => [ grep { ! /Type$/ } @tables ],
+	lookups => [ grep {   /Type$/ } @tables ],
+	
+	relation_name_builder => sub{
+		my ( $class, %args) = @_;
 		
-			verbose => 1
+		$args{lookup} =~ /^(.+)Type$/;
+		lc( $1 );
+	},
+	lookup_field_name_builder => sub{
+		'name';	
 	}
-
 );
+
+{ # what if we defined twice the lookup, names should clash
+	throws_ok { 
+					$result->add_lookups(
+						targets => [ grep { ! /Type$/ } @tables ],
+						lookups => [ grep {   /Type$/ } @tables ],
+						
+						relation_name_builder => sub{
+								my ( $class, %args) = @_;
+								
+								$args{lookup} =~ /^(.+)Type$/;
+								lc( $1 );
+						},
+						lookup_field_name_builder => sub{
+								'name';	
+						}
+					)
+
+				} qr/already defined/i, 'collision detected => dies';
+
+}
+
 
 my $flash = User->find( {first_name => 'Flash' } );
 my $flash_perm_name = PermissionType->find( $flash->permission_type_id )->name;
 my $flash_department_name = DepartmentType->find( $flash->department_type_id )->name; 
 
 # with the lookup detection 
-my $flash_perm_lookup = User->find( {first_name => 'Flash' } )->permissiontype; 
+my $flash_perm_lookup = User->find( {first_name => 'Flash' } )->permission; 
 ok( $flash_perm_name =~ $flash_perm_lookup, "add_lookups is now working $flash_perm_lookup"  );
 
 # with the lookup detection 
-my $flash_department_lookup = User->find( {first_name => 'Flash' } )->departmenttype; 
+my $flash_department_lookup = User->find( {first_name => 'Flash' } )->department; 
 ok( $flash_department_lookup =~ $flash_department_name, "add_lookups is now working $flash_department_lookup"  );
 
 

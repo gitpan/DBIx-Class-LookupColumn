@@ -5,7 +5,7 @@ use warnings;
 
 =head1 NAME
 
-DBIx::Class::LookupColumn::Manager - A lazzy dbic component caching queries.
+DBIx::Class::LookupColumn::Manager - a lazy cache system for storing Lookup tables.
 
 =head1 VERSION
 
@@ -16,137 +16,99 @@ Version 0.01
 our $VERSION = '0.01';
 
 use Carp qw(confess);
-use Data::Dumper;
 use Smart::Comments -ENV;
 
 my %CACHE; # main class variable containing all cached objects
 
 
-
-
 =head1 SYNOPSIS
 
-use DBIx::Class::LookupColumn::Manager;
-DBIx::Class::LookupColumn::Manager->FETCH_ID_BY_NAME(  $schema, 'Permission', 'name', 'Administrator' );
-
+ use DBIx::Class::LookupColumn::Manager;
+ DBIx::Class::LookupColumn::Manager->FETCH_ID_BY_NAME(  $schema, 'PermissionType', 'name', 'Administrator' );
+ DBIx::Class::LookupColumn::Manager->FETCH_NAME_BY_ID(  $schema, 'PermissionType', 'name', 1 );
 
 
 =head1 DESCRIPTION
 
-This module does DBIx::Class queries by means of arguments you passed by and stores the result in a nested hashing data structure (cache).
-It does a DBIx::Class query if and only if that one is not yet stored in the cache (lazziness).
+This class is not intended to be used directly. It is the backbone of the L<DBIx::Class::LookupColumn> module.
+
+It stores B<Lookup tables> ( (id, name) ) in a structure and indexes ids and names both ways, so that it is fast to test if a given
+name is defined by a Lookup table.
 
 This module only supports tables having only one single primary key.
 
-The module closely works with the L<DBIx::Class::LookupColumn> package which generates a few convenient methods (accessors) for accessing data in a lookup table from an associated belongs_to table. 
-What is meant as lookup table is a table containing some terms definition, such as PermissionType (permission_id, name) with such data (1, 'Administrator'; 2, 'User'; 3, 'Reader') associated 
-with a client table (also called target table) such as User, whose metas might look like this : (id, first_name, last_name, permission_id).
-Though the module could also be used in an independently way.
+=head1 STATIC METHODS
 
-
-
-
-=head1 EXPORT
-
-FETCH_ID_BY_NAME
-
-FETCH_NAME_BY_ID
-
-RESET_CACHE
-
-RESET_CACHE_LOOKUP_TABLE
-
-
-
-
-=head1 METHODS
+=cut
 
 =head2 FETCH_ID_BY_NAME
 
+ $id = DBIx::Class::LookupColumn::Manager->FETCH_ID_BY_NAME($schema, $lookup_table, $field_name, $name)
+
+Returns the id associated with the value C<$name> in the column C<$field_name> of the Lookup table named C<$lookup_table>.
+
+As a side-effect, it will lazy-load the table C<$lookup_table> in the cache.
+
+B<Arguments>:
+
 =over 4
 
-=item Arguments: $schema, $lookup_table, $field_name, $name.
+=item $schema
 
-=item Returned value: id in the lookup table.
+The L<DBIx::Class::Schema> schema instance.
 
-=item Description : get the id stored in the lookup table for both the column and its value passed by argument.
+=item $lookup_table
 
-=item Example: DBIx::Class::LookupColumn::Manager->FETCH_ID_BY_NAME( $schema, 'Permission', 'name', 'Administrator' ).
+The name of the Lookup table.
+
+=item $field_name
+
+The name of the column of the Lookup table that contains the value of the terms/definitions (e.g. 'name').
+
+=item $name
+
+The value in the column C<$field_name> we want to fetch the primary key for.
 
 =back
 
+B<Example>:
 
+ my $admin_id = DBIx::Class::LookupColumn::Manager->FETCH_ID_BY_NAME( $schema, 'UserType', 'name', 'Administrator' ).
 
 
 =head2 FETCH_NAME_BY_ID
 
-=over 4
+ $name = DBIx::Class::LookupColumn::Manager->FETCH_ID_BY_NAME($schema, $lookup_table, $field_name, $id)
 
-=item Arguments: $schema, $lookup_table, $field_name, $id.
+Returns the name associated with the id C<$id> in the column C<$field_name> of the Lookup table named C<$lookup_table>.
 
-=item Returned value: the value of the $field_name in the lookup table.
+As a side-effect, it will lazy-load the table C<$lookup_table> in the cache.
 
-=item Description : get the value stored in the lookup table for the column and the id passed by argument.
-
-=item Example: DBIx::Class::LookupColumn::Manager->FETCH_NAME_BY_ID( $schema, 'Permission', 'name', 1 ).
-
-=back
-
-
-
-
-=head2 RESET_CACHE
+B<Arguments>:
 
 =over 4
 
-=item Arguments: no argument.
+=item $schema
 
-=item Returned value: no returned value.
+The L<DBIx::Class::Schema> schema instance.
 
-=item Description: reset the whole nested hashing data structure.
+=item $lookup_table
 
-=item Example: DBIx::Class::LookupColumn::Manager->RESET_CACHE.
+The name of the Lookup table.
 
-=back
+=item $field_name
 
+The name of the column of the Lookup table that contains the value of the terms/definitions (e.g. 'name').
 
+=item $id
 
-
-=head2 RESET_CACHE_LOOKUP_TABLE
-
-=over 4
-
-=item Arguments: name of the table whose data are stored in the cache.
-
-=item Returned value: no returned value.
-
-=item Description: reset the hashing whose key is the table's name argument.
-
-=item Example: DBIx::Class::LookupColumn::Manager->RESET_CACHE_LOOKUP_TABLE('Permission').
+The id C<$id> in the column C<$field_name> we want to fetch the value for.
 
 =back
 
+B<Example>:
 
-
-
-=head2 _ENSURE_LOOKUP_IS_CACHED
-
-=over 4
-
-=item Description: carries about doing a query if and only if that one is not yet stored in the cache. For internal use.
-
-=back
-
-
-
-
-=head2 _GET_CACHE
-
-=over 4
-
-=item Description: only for test purpose.
-
-=back
+ my $type_value = DBIx::Class::LookupColumn::Manager->FETCH_NAME_BY_ID( $schema, 'UserType', 'name', 1 ).
 
 
 
@@ -235,9 +197,12 @@ sub _GET_CACHE{
 
 
 
-=head1 AUTHOR
+=head1 AUTHORS
 
 Karl Forner <karl.forner@gmail.com>
+
+Thomas Rubattel <rubattel@cpan.org>
+
 
 =head1 BUGS
 
@@ -281,7 +246,7 @@ L<http://search.cpan.org/dist/DBIx-Class-LookupColumn-Manager/>
 
 =head1 LICENCE AND COPYRIGHT
 
-Copyright 2012 Karl Forner, All Rights Reserved.
+Copyright 2012 Karl Forner and Thomas Rubattel, All Rights Reserved.
 
 This program is free software; you can redistribute it and/or modify it
 under the terms as Perl itself.

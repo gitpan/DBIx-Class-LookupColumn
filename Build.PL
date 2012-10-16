@@ -21,9 +21,9 @@ my %module_build_args = (
     "ExtUtils::MakeMaker" => "6.30",
     "Module::Build" => "0.3601"
   },
-  "dist_abstract" => "dbic component generating accessors method to lookup table from a client table",
+  "dist_abstract" => "dbic component generating accessors method to get data by a table pointing to a Lookup table (catalog of terms) in a efficient way (cache system)",
   "dist_author" => [
-    "Karl Forner <karl.forner\@gmail.com>"
+    "[Karl Forner <karl.forner\@gmail.com>, thomas Rubattel <rubattel\@cpan.org>]"
   ],
   "dist_name" => "DBIx-Class-LookupColumn",
   "dist_version" => "0.01",

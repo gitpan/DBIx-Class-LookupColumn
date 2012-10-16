@@ -9,8 +9,8 @@ use ExtUtils::MakeMaker 6.30;
 
 
 my %WriteMakefileArgs = (
-  "ABSTRACT" => "dbic component generating accessors method to lookup table from a client table",
-  "AUTHOR" => "Karl Forner <karl.forner\@gmail.com>",
+  "ABSTRACT" => "dbic component generating accessors method to get data by a table pointing to a Lookup table (catalog of terms) in a efficient way (cache system)",
+  "AUTHOR" => "[Karl Forner <karl.forner\@gmail.com>, thomas Rubattel <rubattel\@cpan.org>]",
   "BUILD_REQUIRES" => {
     "DBIx::Class::Core" => 0,
     "DBIx::Class::Schema" => 0,

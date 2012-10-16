@@ -26,7 +26,7 @@ fixtures_ok 'core2', "loading perms fixtures from file";
 
 my $result = 'Schema1::Result::User';
 use_ok($result, "package $result can be used");
-$result->load_components( qw/+DBIx::Class::LookupColumn/ );
+$result->load_components( qw/LookupColumn/ );
 
 # called the add_lookup from outside
 $result->add_lookup(  'permission', 'permission_type_id', 'PermissionType',

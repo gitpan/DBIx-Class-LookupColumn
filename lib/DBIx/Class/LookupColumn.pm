@@ -1,262 +1,89 @@
 package DBIx::Class::LookupColumn;
+{
+  $DBIx::Class::LookupColumn::VERSION = '0.01';
+}
+use base DBIx::Class::LookupColumn::LookupColumnComponent;
 
-use strict;
-use warnings;
 
 =head1 NAME
 
-DBIx::Class::LookupColumn - A dbic component for building accessors for a lookup table.
+DBIx::Class::LookupColumn - DBIx::Class components to help using Lookup tables.
 
 =head1 VERSION
 
 Version 0.01
 
-=cut
-
-our $VERSION = '0.01';
-
-use base qw(DBIx::Class);
-use Carp qw(confess);
-use Class::MOP;
-use Data::Dumper;
-use Smart::Comments -ENV;
-use Hash::Merge::Simple qw/merge/;
-
-use DBIx::Class::LookupColumn::Manager;
-
-
-
-
 =head1 SYNOPSIS
 
-__PACKAGE__->load_components( qw/+DBIx::Class::LookupColumn/ );
+L<DBIx::Class::LookupColumn::Auto> is probably what you need to apply this system on your schema.
 
-__PACKAGE__->table("user");
+ # User table with columns user_id, name, and user_type_id (foreign_key to UserType Lookup table)
+ package MySchema::Result::User;
+ __PACKAGE__->table("user");
+ __PACKAGE__->add_columns( "user_id",{}, "name", {}, "user_type_id", {} );
+ __PACKAGE__->belongs_to( "UserType" => "Schema3::Result::UserType", {"user_type_id" => "self.user_type_id"} );
 
-__PACKAGE__->add_columns(
+ # UserType Lookup table, with 2 columns (user_type_id, name) with rows: ( 1 => 'Administrator' , 2 => 'User' , 3 => 'Guest' )
 
-	"user_id",	{ data_type => "integer", is_auto_increment => 1, is_nullable => 0 },
-	"first_name", { data_type => "varchar2", is_nullable => 0, size => 45 },
-	"last_name", { data_type => "varchar2", is_nullable => 0, size => 45 },
-	"permission_type_id", { data_type => "integer", is_nullable => 0 },
-);
-
-__PACKAGE__->set_primary_key("user_id");
-
-__PACKAGE__->add_lookup(  'permission', 'permission_type_id', 'PermissionType' );
-
-
-
+ # $user is a DBIx::Class::Row instance, e.g. $user=$schema->resultset('User')->find( name => 'Flash Gordon' )
+ 
+ print $user->type; # print 'Administrator', not very impressive, could be written as $user->user_type()->name()
+ print $user->type; # same thing, but we are sure that no database request is done thanks to the cache system
+ 
+ print $user->is_type('Administrator')  ? 'Ok' : 'Access Restricted';
+ # equivalent (but more efficient) to
+ my $type = $schema->resultset('UserType')->find( name => 'Administrator')
+   or die "Bad name 'Administrator' for Lookup table UserType";
+ print $user->user_type_id eq $type->id  ? 'Ok' : 'Access Restricted';
+ 
+ $user->set_type('User');
+ # equivalent (but more efficient) to
+ my $type = $schema->resultset('UserType')->find( name => 'User') or die "Bad name 'User' for Lookup table UserType";
+ $user->user_type_id( $type->id );
+ 
+ my @users = $schema->resultset('User')->all; # suppose there are 1000 users
+ 
+ # how many database requests: at most one !
+ # and if you mispelled 'Administrator' the code would die with a meaningful error message
+ foreach my $user (@users) {
+     print $user->name, " has admin rights\n" if $user->is_type('Administrator');
+ }
 
 =head1 DESCRIPTION
 
-This module generates a few convenient methods (accessors) for accessing data in a lookup table from an associated belongs_to table.
-It plays with L<DBIx::Class::LookupColumn::Manager>.
+The objective of this module is to bring efficient and convenient methods for dealing with B<Lookup Tables>. 
+We call Lookup tables tables that are actually catalogs of terms. 
 
-What is meant as lookup table is a table containing some terms definition, such as PermissionType (permission_id, name) with such data 
-(1, 'Administrator'; 2, 'User'; 3, 'Reader') associated 
-with a client table (also called target table) such as User, whose metas might look like this : (id, first_name, last_name, permission_id).
+A good example is the table UserType in the L<Synopsis>, 
+that describles all the possible values for the user types. A normalized database has usually lots of such Lookup tables.
+This is a good database design practice, basically avoiding using hard_coded strings in your database tables.
+Unfortunately it tends to either moving the problem in your code by using hard-coded strings such as 'Administrator'
+, or to complexifying your code.
 
+This module tries to solve this problem by allowing the developer to use strings instead of IDs in his code
+to increase readability (e.g. using 'Administrator' instead of the corresponding ID) without sacrificing performance
+nor safety, thanks to the cache (see L<DBIx::Class::LookupColumn::Manager> ) and the constant value checking.
 
+It works in a lazy slurpy way: the first time a Lookup table value is needed, the whole table is read and stored in 
+the cache (see L<DBIx::Class::LookupColumn::Manager>).
+The  L<DBIx::Class::LookupColumn::LookupColumnComponent> allows to generate accessors for convenience.
+The  L<DBIx::Class::LookupColumn::Auto> allows to quickly add those accessors for all your tables.
 
-=head1 EXPORT
 
-add_lookup
+=head1 Lookup Tables
 
+What we call B<Lookup Tables>, as stated above, are catalogs of terms, hard-coded values.
+This a quite fuzzy definition, and in our understanding these kinds of tables are also usually I<small> 
+and I<stable>, making perfect candidates for caching.
 
+The idea of this modules came when using a database schema with dozens of tables called PermissionType, UserType, DocumentType
+each with less than 10 values. Using DBIx::Class objects, this leaded to very inefficient database queries.
+Using this module solved this problem, and we hope it could be useful to others.
 
 
-=head1 METHODS
+=head1 CAVEATS
 
-=head2 add_lookup
-
-=over 4
-
-=item Arguments: $relation_name, $foreign_key, $lookup_table, \%options?
-
-=item Returned value: no return value.
-
-=item Example: __PACKAGE__->add_lookup(  'permission', 'permission_type_id', 'PermissionType',
-	{name_accessor => 'get_the_permission',
-	name_setter   => 'set_the_permission,
-	name_checker  => 'is_the_permission'
-	} 
-);
-
-=back
-
-
-
-=head1 GENERATED METHODS
-
-=head2 $relation_name
-
-=over 4
-
-=item Arguments: no argument.
-
-=item Returned value: value in the related $name_field within lookup table.
-
-=item Example: User->find( 1 )->permission
-
-=back
-
-
-
-
-=head2 set_$relation_name
-
-=over 4
-
-=item Arguments: new_value related to the $field_name within the lookup table.
-
-=item Returned value: no return value.
-
-=item Description : set the id related to the new_value in the L<DBIx::Class::Row> object.
-
-=item Example: User->find( 1 )->set_permission( 'Administrator' ).
-
-=back
-
-
-
-
-=head2 is_$relation_name
-
-=over 4
-
-=item Arguments: any value related to the $field_name within the lookup table.
-
-=item Returned value: boolean.
-
-=item Description : tell if the value in the lookup table as argument is true or not.
-
-=item Example: User->find( 1 )->is_permission( 'Administrator' ).
-
-=back
-
-
-=cut
-
-
-
-
-sub add_lookup {
-    my ( $class, $relname, $foreign_key, $lookup_table, $options ) = @_;
-    
- 	#### add_lookup relation_name, foreign_key, lookup_table, options: $relation_name, $foreign_key, $lookup_table, $options
- 
-    # as it suggests $options is an optional argument
-   	$options ||= {};
-        
-    my $defaults = {  
-    				name_accessor => $relname,
-    				name_setter   => "set_$relname",
-    				name_checker  => "is_$relname",
-    				field_name    => 'name',
-        			}; 
-    
-    my $params = merge $defaults, $options;
-    
-    my $field_name	= $params->{field_name};
-    
-    my $fetch_id_by_name = sub { 
-   		my ($self, $name) = @_;
-   		DBIx::Class::LookupColumn::Manager->FETCH_ID_BY_NAME(  $self->result_source->schema, $lookup_table, $field_name, $name);
-    };
-    
-    my $meta = Class::MOP::Class->initialize($class) or die;
-        # test if not already present
-        foreach my $method ( @$params{qw/name_accessor name_setter name_checker/} ) {
-            confess "ERROR: method $method already defined"
-                if $meta->get_method($method);
-        }
-
-        $meta->add_method( $params->{name_accessor}, sub {
-            my $self = shift; # $self isa Row
-            my $schema = $self->result_source->schema;
-            return DBIx::Class::LookupColumn::Manager->FETCH_NAME_BY_ID( $schema, $lookup_table, $field_name, $self->get_column($foreign_key) );
-        });
-        
-        
-        $meta->add_method( $params->{name_setter}, sub {
-            my ($self, $new_name) = @_; 
-            my $schema = $self->result_source->schema;
-            my $id = $fetch_id_by_name->( $self, $new_name );
-            $self->set_column($foreign_key, $id);
-        });
-        
-
-         $meta->add_method( $params->{name_checker}, sub {
-            my ($self, $name) = @_; # $self isa Row
-            my $schema = $self->result_source->schema;
-            my $id = $self->get_column( $foreign_key );
-            return unless defined $id;
-            return $fetch_id_by_name->( $self, $name ) eq $id;
-        });
-}
-
-
-
-
-
-
-
-
-
-
-
-=head1 AUTHOR
-
-Karl Forner <karl.forner@gmail.com>
-
-=head1 BUGS
-
-Please report any bugs or feature requests to C<bug-dbix-class-lookupcolumn at rt.cpan.org>, or through
-the web interface at L<http://rt.cpan.org/NoAuth/ReportBug.html?Queue=DBIx-Class-LookupColumn>.  I will be notified, and then you'll
-automatically be notified of progress on your bug as I make changes.
-
-
-
-
-=head1 SUPPORT
-
-You can find documentation for this module with the perldoc command.
-
-    perldoc DBIx::Class::LookupColumn
-
-
-You can also look for information at:
-
-=over 4
-
-=item * RT: CPAN's request tracker (report bugs here)
-
-L<http://rt.cpan.org/NoAuth/Bugs.html?Dist=DBIx-Class-LookupColumn>
-
-=item * AnnoCPAN: Annotated CPAN documentation
-
-L<http://annocpan.org/dist/DBIx-Class-LookupColumn>
-
-=item * CPAN Ratings
-
-L<http://cpanratings.perl.org/d/DBIx-Class-LookupColumn>
-
-=item * Search CPAN
-
-L<http://search.cpan.org/dist/DBIx-Class-LookupColumn/>
-
-=back
-
-
-
-
-=head1 LICENCE AND COPYRIGHT
-
-Copyright 2012 Karl Forner, All Rights Reserved.
-
-This program is free software; you can redistribute it and/or modify it
-under the terms as Perl itself.
+Do not use this module on I<big> tables, it could actually slow down your code and eat all your memory.
 
 =cut
 

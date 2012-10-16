@@ -5,7 +5,7 @@ use warnings;
 
 =head1 NAME
 
-DBIx::Class::LookupColumn::Auto - A dbic component for detecting lookup tables within a schema and adding accessors to all L<DBIx::Class::ResultSource> classes.
+DBIx::Class::LookupColumn::Auto - A dbic component for installing LookupColumn relations on a whole schema at once.
 
 =head1 VERSION
 
@@ -20,113 +20,140 @@ use base qw(DBIx::Class);
 use Data::Dumper;
 use Smart::Comments -ENV;
 use Hash::Merge::Simple qw/merge/;
-
-use DBIx::Class::LookupColumn;
+use Carp qw(confess);
+use DBIx::Class::LookupColumn::LookupColumnComponent;
 
 
 =head1 SYNOPSIS
 
-__PACKAGE__->load_components( qw/+DBIx::Class::LookupColumn::Auto/ );
+ package MySchema; 
 
-my @tables = __PACKAGE__-> sources;
+ __PACKAGE__->load_components( qw/+DBIx::Class::LookupColumn::Auto/ );
 
-__PACKAGE__->add_lookups(
-	targets => [ grep { ! /Type$/ } @tables ],
-	lookups => [ grep {   /Type$/ } @tables ],
+ my @tables = __PACKAGE__->sources; # get all table names 
+ 
+ my @candidates =  grep { ! /Type$/ } @tables;  # tables that do NOT end with Type
+ my @lookups =  grep {  /Type$/ } @tables;      # tables that DO end with Type == the Lookup Tables !
+
+ __PACKAGE__->add_lookups(
+	targets => \@candidates, 
+	lookups => \@lookups,
 	
-	options => {
-		relation_name_builder => sub{
-			my ( $class, %args) = @_;
-			
-			$args{lookup} =~ /^(.+)Type$/;
-			lc( $1 );
-		},
-		lookup_field_name => sub{
-			'name';	
-		}
-	}
-);
-
-
-
-
+	# function that will generate the relation names: here we build it from the Lookup Table
+	relation_name_builder => sub{
+		my ( $class, %args) = @_;
+		$args{lookup} =~ /^(.+)Type$/; # remove the end (Type) from the Lookup table name
+		lc( $1 );
+	},
+	# function that gives the name of the column that holds the definitions/values: here it is always 'name'
+	lookup_field_name => sub { 'name' } 
+ );
 
 
 =head1 DESCRIPTION
 
-This module generates a few convenient methods (accessors) for a whole schema's client tables. It makes use of L<DBIx::Class:LookupColumn>. 
+This component automates the addition of the B<Lookup> (see L<DBIx::Class::LookupColumn/"Lookup tables">) relations to a whole set of tables.
 
-What is meant as lookup table is a table containing some terms definition, such as PermissionType (permission_id, name) with such data (1, 'Administrator'; 2, 'User'; 3, 'Reader') associated 
-with a client table (also called target table) such as User, whose metas might look like this : (id, first_name, last_name, permission_id).
+Given a set of potential target tables (the tables on which to add the Lookup relations), and a set of Lookup tables,
+the component will select all the I<belongs_to> relations defined in the target tables pointing to a Lookup table present in the set
+and add a Lookup relation automatically.
 
-It is also possible to add accessors in a non-automated way by doing a copy/paste of the code diplayed when verbose is true (See L<add_lookups>).
-
-
-
-=head1 EXPORT
-
-add_lookups
-
-
+It is also possible to add accessors manuall by doing a copy/paste of the code diplayed with the verbose option (See L<add_lookups>).
 
 
 =head1 METHODS
 
 =head2 add_lookups
 
-=over 4
+ __PACKAGE__->add_lookups( { targets => [], lookups => [], relation_name_builder? => sub {}, lookup_field_name_builder? => sub {}, verbose? => boolean } )
 
-=item Arguments: \@target_tables, \@lookup_tables, \%options?
+This will iterate through the set of B<targets> tables on all B<belongs_to> relations pointing to a table included in B<lookups>
+and add a corresponding relation.
 
-=item Returned value: no return value.
-
-=item Options: 1) func ref for building the accessors' name. 2) func ref for giving the name of the related column in the lookup table. 3) verbose => bolean, displays code to add manually to each L<DBIx::Class::ResultSource> classes.
-
-=item Description: create the methods (accessors) to all client classes whose name is passed as argument.
-
-=item Example: User->find( {last_name => 'uchiwa'} )->permission.
-
-
-
-=back
-
-
-
-
-=head2 _target2lookups
+B<Arguments (hash keys) >:
 
 =over 4
 
-=item Description: Build a nested hashing. For internal use.
+=item targets
 
+An ArrayRef of the names of the tables on which to detect and install the Lookup relations.
+
+=item lookups
+
+An ArrayRef of the names of the Lookup tables.
+
+=item relation_name_builder?
+
+Optional. FuncRef for building the accessors base name. By default the name of the Lookup table in small caps.
+
+=item lookup_field_name_builder?
+
+Optional. FuncRef for specifying the concerned column name in the Lookup table. By default the first I<varchar> type column in the Lookup table.
+
+=item verbose?
+
+Optional. Boolean for displaying the code for adding a Lookup relation. Copy/paste it the right place of your code. By default set to false, then non-verbose.
+ 	
 =back
-
-
-
-=head2 _guess_relation_name
-
-=over 4
-
-=item Description: Find out by default the appropriate relation name for building the accessors. For internal use.
-
-=back
-
-
-
-
-=head2 _guess_field_name
-
-=over 4
-
-=item Description: Find out by default the appropriate column in the lookup table. For internal use.
-
-=back
-
-
 
 
 
 =cut
+
+sub add_lookups {
+
+    my ( $class, %args ) = @_;
+    
+    
+    my $targets_array_ref	= exists ( $args{targets} ) ? $args{targets} : confess 'targets arg is missing';
+    my $lookups_array_ref	= exists ( $args{lookups} ) ? $args{lookups} : confess 'lookups arg is missing';
+        
+	my $options = {};
+    if ( exists ( $args{relation_name_builder} ) ){  $options->{relation_name_builder}	= $args{relation_name_builder} ;}
+    if ( exists ( $args{lookup_field_name_builder})){ $options->{lookup_field_name_builder}	= $args{lookup_field_name_builder};}
+    if ( exists ( $args{verbose} )				  ){ $options->{verbose}	= $args{verbose}									;}
+    
+    my $defaults = {  
+    				relation_name_builder => \&_guess_relation_name,
+    				lookup_field_name_builder  => \&_guess_field_name,
+    				verbose => 0
+        			}; 
+
+	my $params = merge $defaults, $options;
+
+	my $verbose = $params->{verbose};
+	
+    my $target2lkp_hash_ref = $class->_target2lookups( $targets_array_ref,  $lookups_array_ref );
+    
+    #### target2lookups returned: $target2lkp_hash_ref
+    
+    my ( $target, $fk2lkp_hash_ref);
+    while ( ( $target, $fk2lkp_hash_ref ) = each ( %$target2lkp_hash_ref ) ) {
+    	 if($verbose) {
+ 			warn "adding to package $target\n";
+ 			warn "__PACKAGE__->load_components(LookupColumn)\n";
+    	 }
+ 		foreach my $fk (keys %$fk2lkp_hash_ref) {
+ 			
+ 			my $lookup = $fk2lkp_hash_ref->{$fk};
+ 		
+ 			my @args = (
+ 				$params->{relation_name_builder}->( $class, target => $target, lookup => $lookup, foreign_key => $fk ),
+ 				$fk, $lookup, 
+ 				{
+							field_name => $params->{lookup_field_name_builder}->( $class, target => $target, lookup => $lookup, foreign_key => $fk )
+				}
+			);
+
+  			if($verbose) {
+ 				my $s = Dumper(\@args);
+ 				$s =~ s/^[^\[]*\[(.+)\];.*/$1/s;
+ 				warn "__PACKAGE__->add_lookup($s)\n" ;
+ 			}
+			DBIx::Class::LookupColumn::LookupColumnComponent::add_lookup( $class->class( $target), @args );
+ 		}
+    }
+}
 
 
 sub _target2lookups {
@@ -196,7 +223,7 @@ sub _guess_field_name {
 		foreach my $column ( @columns_without_primary_keys ){
 			my $column_metas = $schema->source( $lookup )->column_info( $column );
 			
-			if ( $column_metas->{data_type} =~ /(varchar|text)/ ){
+			if ( $column_metas->{data_type} =~ /varchar/ ){
 				#select the first varchar column 
 				$guessed_field = $column;
 				last;
@@ -209,55 +236,6 @@ sub _guess_field_name {
 
 
 
-sub add_lookups {
-    my ( $class, %args ) = @_;
-    
-    my $targets_array_ref	= $args{targets};
-    my $lookups_array_ref	= $args{lookups};    
-    
-    my $options = $args{options} || {};
-    
-    my $defaults = {  
-    				relation_name_builder => \&_guess_relation_name,
-    				lookup_field_name  => \&_guess_field_name,
-    				verbose => 0
-        			}; 
-
-	my $params = merge $defaults, $options;
-
-	my $verbose = $params->{verbose};
-	
-    my $target2lkp_hash_ref = $class->_target2lookups( $targets_array_ref,  $lookups_array_ref );
-    
-    #### target2lookups returned: $target2lkp_hash_ref
-    
-    my ( $target, $fk2lkp_hash_ref);
-    while ( ( $target, $fk2lkp_hash_ref ) = each ( %$target2lkp_hash_ref ) ) {
-    	 if($verbose) {
- 			warn "adding to package $target\n";
- 			warn "__PACKAGE__->load_components(+DBIx::Class::LookupColumn)\n";
-    	 }
- 		foreach my $fk (keys %$fk2lkp_hash_ref) {
- 			
- 			my $lookup = $fk2lkp_hash_ref->{$fk};
- 		
- 			my @args = (
- 				$params->{relation_name_builder}->( $class, target => $target, lookup => $lookup, foreign_key => $fk ),
- 				$fk, $lookup, 
- 				{
-							field_name => $params->{lookup_field_name}->( $class, target => $target, lookup => $lookup, foreign_key => $fk )
-				}
-			);
-
-  			if($verbose) {
- 				my $s = Dumper(\@args);
- 				$s =~ s/^[^\[]*\[(.+)\];.*/$1/s;
- 				warn "__PACKAGE__->add_lookup($s)\n" ;
- 			}
-			DBIx::Class::LookupColumn::add_lookup( $class->class( $target), @args );
- 		}
-    }
-}
 
 
 
@@ -265,9 +243,11 @@ sub add_lookups {
 
 
 
-=head1 AUTHOR
+=head1 AUTHORS
 
 Karl Forner <karl.forner@gmail.com>
+
+Thomas Rubattel <rubattel@cpan.org>
 
 =head1 BUGS
 
@@ -311,7 +291,7 @@ L<http://search.cpan.org/dist/DBIx-Class-LookupColumn-Auto/>
 
 =head1 LICENCE AND COPYRIGHT
 
-Copyright 2012 Karl Forner, All Rights Reserved.
+Copyright 2012 Karl Forner and Thomas Rubattel, All Rights Reserved.
 
 This program is free software; you can redistribute it and/or modify it
 under the terms as Perl itself.
