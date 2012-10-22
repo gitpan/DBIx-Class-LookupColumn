@@ -7,13 +7,14 @@ use warnings;
 
 DBIx::Class::LookupColumn::Auto - A dbic component for installing LookupColumn relations on a whole schema at once.
 
+
 =head1 VERSION
 
-Version 0.01
+Version 0.02
 
 =cut
 
-our $VERSION = '0.01';
+our $VERSION = '0.02';
 
 use base qw(DBIx::Class);
 
@@ -28,7 +29,7 @@ use DBIx::Class::LookupColumn::LookupColumnComponent;
 
  package MySchema; 
 
- __PACKAGE__->load_components( qw/+DBIx::Class::LookupColumn::Auto/ );
+ __PACKAGE__->load_components( qw/LookupColumn::Auto/ );
 
  my @tables = __PACKAGE__->sources; # get all table names 
  
@@ -46,13 +47,13 @@ use DBIx::Class::LookupColumn::LookupColumnComponent;
 		lc( $1 );
 	},
 	# function that gives the name of the column that holds the definitions/values: here it is always 'name'
-	lookup_field_name => sub { 'name' } 
+	lookup_field_name_builder => sub { 'name' } 
  );
 
 
 =head1 DESCRIPTION
 
-This component automates the addition of the B<Lookup> (see L<DBIx::Class::LookupColumn/"Lookup tables">) relations to a whole set of tables.
+This component automates the addition of the B<Lookup> (see L<DBIx::Class::LookupColumn/Lookup Tables>) relations to a whole set of tables.
 
 Given a set of potential target tables (the tables on which to add the Lookup relations), and a set of Lookup tables,
 the component will select all the I<belongs_to> relations defined in the target tables pointing to a Lookup table present in the set
@@ -85,6 +86,7 @@ An ArrayRef of the names of the Lookup tables.
 =item relation_name_builder?
 
 Optional. FuncRef for building the accessors base name. By default the name of the Lookup table in small caps.
+Arguments (hash keys) : { target => ?, lookup => ?, foreign_key => ? }.
 
 =item lookup_field_name_builder?
 
@@ -109,15 +111,16 @@ sub add_lookups {
     my $lookups_array_ref	= exists ( $args{lookups} ) ? $args{lookups} : confess 'lookups arg is missing';
         
 	my $options = {};
-    if ( exists ( $args{relation_name_builder} ) ){  $options->{relation_name_builder}	= $args{relation_name_builder} ;}
+    if ( exists ( $args{relation_name_builder} ) )	{  $options->{relation_name_builder}	= $args{relation_name_builder} ;}
     if ( exists ( $args{lookup_field_name_builder})){ $options->{lookup_field_name_builder}	= $args{lookup_field_name_builder};}
-    if ( exists ( $args{verbose} )				  ){ $options->{verbose}	= $args{verbose}									;}
+    if ( exists ( $args{verbose} )				  )	{ $options->{verbose}	= $args{verbose}									;}
     
     my $defaults = {  
     				relation_name_builder => \&_guess_relation_name,
     				lookup_field_name_builder  => \&_guess_field_name,
-    				verbose => 0
-        			}; 
+    				verbose	=> 0
+    				};
+
 
 	my $params = merge $defaults, $options;
 
@@ -186,7 +189,7 @@ sub _target2lookups {
 			next unless $info->{attrs}->{accessor} eq 'single'; # heuristic to detect belongs_to relation
 			
 			$relationships{$target}->{$fk} = $lookups{$info->{source}};
-		}	
+		}
 	}
 	
 	return \%relationships;
@@ -236,26 +239,18 @@ sub _guess_field_name {
 
 
 
-
-
-
-
-
-
-
 =head1 AUTHORS
 
 Karl Forner <karl.forner@gmail.com>
 
 Thomas Rubattel <rubattel@cpan.org>
 
+
 =head1 BUGS
 
 Please report any bugs or feature requests to C<bug-dbix-class-lookupcolumn-auto at rt.cpan.org>, or through
 the web interface at L<http://rt.cpan.org/NoAuth/ReportBug.html?Queue=DBIx-Class-LookupColumn-Auto>.  I will be notified, and then you'll
 automatically be notified of progress on your bug as I make changes.
-
-
 
 
 =head1 SUPPORT

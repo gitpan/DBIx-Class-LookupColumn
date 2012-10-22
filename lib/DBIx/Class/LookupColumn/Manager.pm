@@ -7,13 +7,14 @@ use warnings;
 
 DBIx::Class::LookupColumn::Manager - a lazy cache system for storing Lookup tables.
 
+
 =head1 VERSION
 
-Version 0.01
+Version 0.02
 
 =cut
 
-our $VERSION = '0.01';
+our $VERSION = '0.02';
 
 use Carp qw(confess);
 use Smart::Comments -ENV;
@@ -36,6 +37,7 @@ It stores B<Lookup tables> ( (id, name) ) in a structure and indexes ids and nam
 name is defined by a Lookup table.
 
 This module only supports tables having only one single primary key.
+
 
 =head1 STATIC METHODS
 
@@ -75,7 +77,6 @@ B<Example>:
 
  my $admin_id = DBIx::Class::LookupColumn::Manager->FETCH_ID_BY_NAME( $schema, 'UserType', 'name', 'Administrator' ).
 
-
 =head2 FETCH_NAME_BY_ID
 
  $name = DBIx::Class::LookupColumn::Manager->FETCH_ID_BY_NAME($schema, $lookup_table, $field_name, $id)
@@ -108,7 +109,7 @@ The id C<$id> in the column C<$field_name> we want to fetch the value for.
 
 B<Example>:
 
- my $type_value = DBIx::Class::LookupColumn::Manager->FETCH_NAME_BY_ID( $schema, 'UserType', 'name', 1 ).
+ my $type_name = DBIx::Class::LookupColumn::Manager->FETCH_NAME_BY_ID( $schema, 'UserType', 'name', 1 ).
 
 
 
@@ -193,7 +194,6 @@ sub _GET_CACHE{
 	my ( $class ) = @_;
 	return \%CACHE;
 }
-
 
 
 

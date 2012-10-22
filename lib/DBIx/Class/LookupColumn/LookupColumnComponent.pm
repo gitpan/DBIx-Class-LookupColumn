@@ -9,11 +9,11 @@ DBIx::Class::LookupColumn::LookupColumnComponent - A dbic component for building
 
 =head1 VERSION
 
-Version 0.01
+Version 0.02
 
 =cut
 
-our $VERSION = '0.01';
+our $VERSION = '0.02';
 
 use base qw(DBIx::Class);
 use Carp qw(confess);
@@ -40,7 +40,7 @@ use DBIx::Class::LookupColumn::Manager;
 
  $user->type; # fetches the type value (e.g. 'Administrator') directly from the cache
 
- # checks that 'Administrator' is a valid value, get its id, and tests if it matches $user->user_type_idca me 
+ # checks that 'Administrator' is a valid value, get its id, and tests if it matches $user->user_type_id
  $user->is_type('Administrator');
  
  # checks that 'User' is a valid value, get its id, and sets it as $user->user_type_id
@@ -52,7 +52,7 @@ This is the actual implementation of L<DBIx::Class::LookupColumn>, that is why y
 instead of C<'LookupColumn::LookupColumnComponent'> in the C<load_components> function call.
 
 
-This module generates convenient methods (accessors) for accessing data in a B<Lookup table> (see L<DBIx::Class::LookupColumn/"Lookup tables">.
+This module generates convenient methods (accessors) for accessing data in a B<Lookup table> (see L<DBIx::Class::LookupColumn/Lookup Tables>.
 It uses L<DBIx::Class::LookupColumn::Manager> to cache and store the entire lookup tables in memory.
 
 
@@ -67,7 +67,7 @@ new accessors and setters.
 The relation is defined by its B<name> ( C<$relation_name> ), the B<foreign key> and the 
 B<Lookup table>.
 
-It will add three methods to the class: see L</GENERATED METHODS>
+It will add three methods to the class: see L</GENERATED METHODS>.
 
 
 B<Arguments>:
@@ -150,7 +150,7 @@ B<Example>:
  User->find($user_id)->is_type('Guest') 
 
 Returns true if the value in the Lookup Table UserType associated with the key  User->find($user_id)->user_type_id
-is equals to 'Guest'
+is equals to 'Guest'.
 
 =cut
 
@@ -160,7 +160,7 @@ is equals to 'Guest'
 sub add_lookup {
     my ( $class, $relname, $foreign_key, $lookup_table, $options ) = @_;
     
- 	#### add_lookup relation_name, foreign_key, lookup_table, options: $relation_name, $foreign_key, $lookup_table, $options
+ 	#### add_lookup relation_name, foreign_key, lookup_table, options: $relname, $foreign_key, $lookup_table, $options
  
     # as it suggests $options is an optional argument
    	$options ||= {};
@@ -219,13 +219,11 @@ Karl Forner <karl.forner@gmail.com>
 
 Thomas Rubattel <rubattel@cpan.org>
 
+
 =head1 BUGS
 
 Please report any bugs or feature requests to C<bug-dbix-class-lookupcolumn-lookupcolumncomponent at rt.cpan.org>, or through
-the web interface at L<http://rt.cpan.org/NoAuth/ReportBug.html?Queue=DBIx-Class-LookupColumn-LookupColumnComponent>.  I will be notified, and then you'll
-automatically be notified of progress on your bug as I make changes.
-
-
+the web interface at L<http://rt.cpan.org/NoAuth/ReportBug.html?Queue=DBIx-Class-LookupColumn-LookupColumnComponent>.  I will be notified, and then you'll automatically be notified of progress on your bug as I make changes.
 
 
 =head1 SUPPORT

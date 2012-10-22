@@ -17,7 +17,7 @@ What is meant as a lookup table is a table containing some terms definition, suc
 with a client table such as User, whose metas might look like this : (id, first_name, last_name, permission_id).
 
 
-Features
+Functionality
 ---------------
 
 The three major functionalities this present distro offer are :
