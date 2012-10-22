@@ -1,6 +1,6 @@
 package DBIx::Class::LookupColumn;
 {
-  $DBIx::Class::LookupColumn::VERSION = '0.02';
+  $DBIx::Class::LookupColumn::VERSION = '0.03';
 }
 use base DBIx::Class::LookupColumn::LookupColumnComponent;
 
@@ -11,7 +11,7 @@ DBIx::Class::LookupColumn - DBIx::Class components to help using Lookup tables.
 
 =head1 VERSION
 
-Version 0.02
+Version 0.03
 
 =head1 SYNOPSIS
 
@@ -120,10 +120,10 @@ In this case the RoleType is the Lookup table and ActorRole the one the lookup r
 
  # In the Schema Class
  # let's automatize the lookup relation creation
- SchemaMany2Many->load_components( qw/LookupColumn::Auto/ );
+ __PACKAGE__->load_components( qw/LookupColumn::Auto/ );
 
- my @tables = $schema->sources;
- SchemaMany2Many->add_lookups(
+ my @tables = __PACKAGE__->sources;
+ __PACKAGE__->add_lookups(
 		targets => [ grep{ !/Type$/  } @tables ],
 		lookups => [ grep{ /Type$/} @tables],
 		relation_name_builder => sub{
@@ -144,7 +144,7 @@ In this case the RoleType is the Lookup table and ActorRole the one the lookup r
  # inefficient classical way to do it
  my @roles_played_classical = map { $_->roletype()->name } $actor->actorroles(); # does a DB request at EACH loop !
  my $played_warlock =  'Warlock' ~~ @roles_played_classical; # assigns boolean 
- # my $played_warloc =  'Warloc' ~~ @roles_played; # assigns an empty string, NOT safe regarding TYPOS !
+ # my $played_warlock =  'Warloc' ~~ @roles_played_classical; # assigns an empty string, NOT safe regarding TYPOS !
 
 =cut
 

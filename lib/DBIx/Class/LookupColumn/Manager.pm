@@ -10,11 +10,11 @@ DBIx::Class::LookupColumn::Manager - a lazy cache system for storing Lookup tabl
 
 =head1 VERSION
 
-Version 0.02
+Version 0.03
 
 =cut
 
-our $VERSION = '0.02';
+our $VERSION = '0.03';
 
 use Carp qw(confess);
 use Smart::Comments -ENV;
