@@ -20,8 +20,8 @@ with a client table such as User, whose metas might look like this : (id, first_
 Features
 ---------------
 
-The three major functionalities this present distro offer are :
+The three major features this present distro offer are :
 
 * generates accessors to table classes for fectching data stored in the associated lookup table. 
-* provide an effecient way to fetch data by means of a cache system.
-* automatizes the accessors' generating for a whole DB schema.  
+* provides an effecient way to fetch data by means of a cache system.
+* automatizes the accessors' generating for a DB schema.

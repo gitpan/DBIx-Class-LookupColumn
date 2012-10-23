@@ -1,7 +1,7 @@
 
 
 This archive contains the distribution DBIx-Class-LookupColumn,
-version 0.03:
+version 0.04:
 
   dbic component generating accessors method to get data by a table pointing to a Lookup table (catalog of terms) in a efficient way (cache system)
 

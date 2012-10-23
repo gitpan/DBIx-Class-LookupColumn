@@ -5,7 +5,7 @@ copyright_holder	= Karl Forner and Thomas Rubattel
 copyright_year		= 2012
 main_module			= lib/DBIx/Class/LookupColumn.pm
 abstract			= dbic component generating accessors method to get data by a table pointing to a Lookup table (catalog of terms) in a efficient way (cache system)
-version				= 0.02
+version				= 0.03
 
 ; -- [AutoVersion]
 major = 0
@@ -34,3 +34,6 @@ copyright = 1
 
 ; -- Release
 [UploadToCPAN]
+[@Git]
+tag_format = release-%v
+push_to = public
