@@ -1,6 +1,6 @@
 package DBIx::Class::LookupColumn;
 {
-  $DBIx::Class::LookupColumn::VERSION = '0.06';
+  $DBIx::Class::LookupColumn::VERSION = '0.07';
 }
 use base DBIx::Class::LookupColumn::LookupColumnComponent;
 
@@ -11,7 +11,7 @@ DBIx::Class::LookupColumn - DBIx::Class components to help using Lookup tables.
 
 =head1 VERSION
 
-Version 0.06
+Version 0.07
 
 =head1 SYNOPSIS
 

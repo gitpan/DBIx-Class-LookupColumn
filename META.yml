@@ -27,9 +27,10 @@ requires:
   Class::MOP: 0
   DBIx::Class: 0
   Data::Dumper: 0
+  Hash::FieldHash: 0
   Hash::Merge::Simple: 0
   Smart::Comments: 0
   base: 0
   strict: 0
   warnings: 0
-version: 0.06
+version: 0.07

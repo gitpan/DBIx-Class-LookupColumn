@@ -9,11 +9,11 @@ DBIx::Class::LookupColumn::LookupColumnComponent - A dbic component for building
 
 =head1 VERSION
 
-Version 0.06
+Version 0.07
 
 =cut
 
-our $VERSION = '0.06';
+our $VERSION = '0.07';
 
 use base qw(DBIx::Class);
 use Carp qw(confess);

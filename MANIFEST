@@ -85,6 +85,3 @@ t/lib/Schema_ad_lookups_inside.pm
 t/lib/Schema_ad_lookups_inside/Result/Actor.pm
 t/lib/Schema_ad_lookups_inside/Result/ActorRole.pm
 t/lib/Schema_ad_lookups_inside/Result/RoleType.pm
-t/manifest.t
-t/pod-coverage.t
-t/pod.t

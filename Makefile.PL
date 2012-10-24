@@ -34,13 +34,14 @@ my %WriteMakefileArgs = (
     "Class::MOP" => 0,
     "DBIx::Class" => 0,
     "Data::Dumper" => 0,
+    "Hash::FieldHash" => 0,
     "Hash::Merge::Simple" => 0,
     "Smart::Comments" => 0,
     "base" => 0,
     "strict" => 0,
     "warnings" => 0
   },
-  "VERSION" => "0.06",
+  "VERSION" => "0.07",
   "test" => {
     "TESTS" => "t/*.t"
   }
