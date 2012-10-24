@@ -10,9 +10,13 @@ README.md~
 dist.ini
 dist.ini~
 lib/DBIx/Class/LookupColumn.pm
+lib/DBIx/Class/LookupColumn.pm~
 lib/DBIx/Class/LookupColumn/Auto.pm
+lib/DBIx/Class/LookupColumn/Auto.pm~
 lib/DBIx/Class/LookupColumn/LookupColumnComponent.pm
+lib/DBIx/Class/LookupColumn/LookupColumnComponent.pm~
 lib/DBIx/Class/LookupColumn/Manager.pm
+lib/DBIx/Class/LookupColumn/Manager.pm~
 t/00-load.t
 t/01-basic.t
 t/02-auto.t
