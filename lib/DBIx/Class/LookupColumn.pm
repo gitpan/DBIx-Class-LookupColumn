@@ -1,6 +1,6 @@
 package DBIx::Class::LookupColumn;
 {
-  $DBIx::Class::LookupColumn::VERSION = '0.07';
+  $DBIx::Class::LookupColumn::VERSION = '0.08';
 }
 use base DBIx::Class::LookupColumn::LookupColumnComponent;
 
@@ -11,7 +11,7 @@ DBIx::Class::LookupColumn - DBIx::Class components to help using Lookup tables.
 
 =head1 VERSION
 
-Version 0.07
+Version 0.08
 
 =head1 SYNOPSIS
 
@@ -82,6 +82,9 @@ Using this module solved this problem, and we hope it could be useful to others.
 
 
 =head1 CAVEATS
+
+Side effect : if one ResultSource class L<DBIx::Class::ResultSource> you would like to apply a lookup relation on has been set to immutable L<Class::MOP::Class>
+it will turn it to mutable for adding the accessors. It will then be reset to immutable.
 
 Do not use this module on I<big> tables, it could actually slow down your code and eat all your memory.
 
