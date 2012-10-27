@@ -10,11 +10,11 @@ DBIx::Class::LookupColumn::Auto - A dbic component for installing LookupColumn r
 
 =head1 VERSION
 
-Version 0.08
+Version 0.09
 
 =cut
 
-our $VERSION = '0.08';
+our $VERSION = '0.09';
 
 use base qw(DBIx::Class);
 
