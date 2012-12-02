@@ -41,8 +41,8 @@ $result->add_lookups(
 			my ( $class, %args) = @_;	
 			$args{lookup} =~ /^(.+)Type$/;
 			lc( $1 );
-	},
-	lookup_field_name_builder => sub { 'name' }
+		},
+		lookup_field_name_builder => sub { 'name' }
 );
 
 

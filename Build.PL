@@ -26,7 +26,7 @@ my %module_build_args = (
     "[Karl Forner <karl.forner\@gmail.com>, thomas Rubattel <rubattel\@cpan.org>]"
   ],
   "dist_name" => "DBIx-Class-LookupColumn",
-  "dist_version" => "0.09",
+  "dist_version" => "0.10",
   "license" => "perl",
   "module_name" => "DBIx::Class::LookupColumn",
   "recommends" => {},

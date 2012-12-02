@@ -11,9 +11,7 @@ use 5.14.2;
 
 use Test::DBIx::Class -config_path => [[qw/t etc schema /], [qw/t etc schema_ad_lookups_inside schema_class/]], 'Actor', 'ActorRole', 'RoleType';
 
-
 my $schema = Schema();
-
 
 isa_ok Schema, 'Schema_ad_lookups_inside'
   => 'Got Correct Schema';

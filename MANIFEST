@@ -1,5 +1,6 @@
 Build.PL
 Changes
+Changes~
 LICENSE
 MANIFEST
 META.yml
@@ -35,7 +36,10 @@ t/11-lookupAutoArgs2.t
 t/12-many2many.t
 t/13-ad_lookups_inside.t
 t/14-ad_components.t
+t/15-test_doc.t
+t/etc/01-basic.t
 t/etc/fixtures/core.pl
+t/etc/fixtures/core10_for_doc.pl
 t/etc/fixtures/core2.pl
 t/etc/fixtures/core3.pl
 t/etc/fixtures/core4.pl
@@ -43,10 +47,12 @@ t/etc/fixtures/core5.pl
 t/etc/fixtures/core6.pl
 t/etc/fixtures/core7.pl
 t/etc/fixtures/core8.pl
+t/etc/fixtures/core9_for_doc.pl
 t/etc/schema.pl
 t/etc/schema1/schema1.pl
 t/etc/schema2/schema2.pl
 t/etc/schema3/schema3.pl
+t/etc/schemaForThesisDocumentation/schema_class.pl
 t/etc/schemaLkpDetection/schema_class.pl
 t/etc/schemaMany2Many/schema_class.pl
 t/etc/schemaUserDepartmentPermission/schema_class.pl
@@ -64,6 +70,9 @@ t/lib/Schema3/Result/User.pm
 t/lib/SchemaCollision.pm
 t/lib/SchemaCollision/Result/PermissionType.pm
 t/lib/SchemaCollision/Result/User.pm
+t/lib/SchemaForThesisDocumentation.pm
+t/lib/SchemaForThesisDocumentation/Result/PermissionType.pm
+t/lib/SchemaForThesisDocumentation/Result/User.pm
 t/lib/SchemaLkpDetection.pm
 t/lib/SchemaLkpDetection/Result/DepartmentType.pm
 t/lib/SchemaLkpDetection/Result/PermissionType.pm

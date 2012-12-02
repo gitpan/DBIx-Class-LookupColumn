@@ -1,4 +1,7 @@
 package DBIx::Class::LookupColumn::Manager;
+{
+  $DBIx::Class::LookupColumn::Manager::VERSION = '0.10';
+}
 
 use strict;
 use warnings;
@@ -7,14 +10,7 @@ use warnings;
 
 DBIx::Class::LookupColumn::Manager - a lazy cache system for storing Lookup tables.
 
-
-=head1 VERSION
-
-Version 0.09
-
 =cut
-
-our $VERSION = '0.09';
 
 use Carp qw(confess);
 use Smart::Comments -ENV;

@@ -1,4 +1,7 @@
 package DBIx::Class::LookupColumn::LookupColumnComponent;
+{
+  $DBIx::Class::LookupColumn::LookupColumnComponent::VERSION = '0.10';
+}
 
 use strict;
 use warnings;
@@ -7,13 +10,7 @@ use warnings;
 
 DBIx::Class::LookupColumn::LookupColumnComponent - A dbic component for building accessors for a lookup table.
 
-=head1 VERSION
-
-Version 0.09
-
 =cut
-
-our $VERSION = '0.09';
 
 use base qw(DBIx::Class);
 use Carp qw(confess);

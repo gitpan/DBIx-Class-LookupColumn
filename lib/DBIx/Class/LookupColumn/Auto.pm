@@ -1,4 +1,7 @@
 package DBIx::Class::LookupColumn::Auto;
+{
+  $DBIx::Class::LookupColumn::Auto::VERSION = '0.10';
+}
 
 use strict;
 use warnings;
@@ -7,14 +10,8 @@ use warnings;
 
 DBIx::Class::LookupColumn::Auto - A dbic component for installing LookupColumn relations on a whole schema at once.
 
-
-=head1 VERSION
-
-Version 0.09
-
 =cut
 
-our $VERSION = '0.09';
 
 use base qw(DBIx::Class);
 

@@ -1,6 +1,6 @@
 package DBIx::Class::LookupColumn;
 {
-  $DBIx::Class::LookupColumn::VERSION = '0.09';
+  $DBIx::Class::LookupColumn::VERSION = '0.10';
 }
 use base DBIx::Class::LookupColumn::LookupColumnComponent;
 
@@ -8,10 +8,6 @@ use base DBIx::Class::LookupColumn::LookupColumnComponent;
 =head1 NAME
 
 DBIx::Class::LookupColumn - DBIx::Class components to help using Lookup tables.
-
-=head1 VERSION
-
-Version 0.09
 
 =head1 SYNOPSIS
 
@@ -21,24 +17,24 @@ L<DBIx::Class::LookupColumn::Auto> is probably what you need to apply this syste
  package MySchema::Result::User;
  __PACKAGE__->table("user");
  __PACKAGE__->add_columns( "user_id",{}, "name", {}, "user_type_id", {} );
- __PACKAGE__->belongs_to( "UserType" => "Schema3::Result::UserType", {"user_type_id" => "self.user_type_id"} );
+ __PACKAGE__->belongs_to( "user_type" => "Schema3::Result::UserType", {"user_type_id" => "self.user_type_id"} );
 
  # UserType Lookup table, with 2 columns (user_type_id, name) with rows: ( 1 => 'Administrator' , 2 => 'User' , 3 => 'Guest' )
 
- # $user is a DBIx::Class::Row instance, e.g. $user=$schema->resultset('User')->find( name => 'Flash Gordon' )
+ # $user is a DBIx::Class::Row instance, e.g. $user=$schema->resultset('User')->find( { name => 'Flash Gordon'} )
  
  print $user->type; # print 'Administrator', not very impressive, could be written as $user->user_type()->name()
  print $user->type; # same thing, but we are sure that no database request is done thanks to the cache system
  
  print $user->is_type('Administrator')  ? 'Ok' : 'Access Restricted';
  # equivalent (but more efficient) to
- my $type = $schema->resultset('UserType')->find( name => 'Administrator')
+ my $type = $schema->resultset('UserType')->find( { name => 'Administrator' })
    or die "Bad name 'Administrator' for Lookup table UserType";
  print $user->user_type_id eq $type->id  ? 'Ok' : 'Access Restricted';
  
  $user->set_type('User');
  # equivalent (but more efficient) to
- my $type = $schema->resultset('UserType')->find( name => 'User') or die "Bad name 'User' for Lookup table UserType";
+ my $type = $schema->resultset('UserType')->find( { name => 'User'} ) or die "Bad name 'User' for Lookup table UserType";
  $user->user_type_id( $type->id );
  
  my @users = $schema->resultset('User')->all; # suppose there are 1000 users
